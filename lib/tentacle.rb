@@ -41,31 +41,30 @@ class Tentacle
     objects.each_with_index do |object, i|
       case object
 
-      when Neo4j::ActiveNode, Neo4j::Server::CypherNode
-        if object.is_a? Participant
-          link = "/participant/#{object.name}"
-        elsif object.is_a? Site
-          link = object.url
-        elsif object.is_a? Comment
-          link = object.site.try(:url) || ""
-        else
-          link = ""
-        end
+      when Neo4j::ActiveNode
+        link = set_link(object)
+        cluster = set_cluster(object)
         nodes[object.neo_id] = {
           id: object.neo_id,
-          labels: (object.is_a?(Neo4j::ActiveNode) ? [object.class.name] : object.labels),
-          role: (object.is_a?(Neo4j::ActiveNode) ? object.class.name : object.labels),
-          caption: (object.is_a?(Neo4j::ActiveNode) ? (object[:url] || object[:name])  : object.labels),
+          labels: [object.class.name],
+          role: object.class.name,
+          caption: object[:url] || object[:name],
           link: URI.escape(link),
-          properties: (object.is_a?(Neo4j::ActiveNode) ? [object.attributes] : object.props)
+          properties: [object.attributes],
+          cluster: cluster
+        }
+      when Neo4j::Server::CypherNode
+        set_link(object)
+        nodes[object.neo_id] = {
+          id: object.neo_id,
+          labels: object.labels,
+          role: object.labels,
+          caption: object.labels,
+          link: URI.escape(link),
+          properties: object.props
         }
       when Neo4j::ActiveRel, Neo4j::Server::CypherRelationship
-        caption = ""
-        if object.try(:type).present?
-          caption = object.type
-        elsif object.try(:rel_type).present?
-          caption = object.rel_type
-        end
+        caption = set_caption(object)
 
         edges[[object.start_node.neo_id, object.end_node.neo_id]] = {
           source: object.start_node.neo_id,
@@ -87,6 +86,49 @@ class Tentacle
   end
 
   private
+
+  def self.set_cluster(object)
+    case object
+    when Participant
+      contributes_to_more_than_one_site?(object) ? 1 : 0
+    when Site
+      has_known_screen_scraper?(object) ? 3 : 2
+    when Comment
+      did_someone_cut_and_paste_an_idea?(object) ? 5 : 4
+    end
+  end
+
+  def self.did_someone_cut_and_paste_an_idea?(object)
+    Comment.where(text: object.text).count > 2
+  end
+
+  def self.has_known_screen_scraper?(object)
+    uri = URI.parse(object.url)
+    ["news.ycombinator.com", 'www.wired.com', 'www.telegraph.co.uk', 'www.theguardian.com', 'www.zdnet.com'].include? uri.host
+  end
+
+  def self.contributes_to_more_than_one_site?(object)
+    object.sites.count > 1
+  end
+
+  def self.set_caption(object)
+    caption = ""
+    caption = object.type if object.respond_to?(:type)
+    caption = object.rel_type if object.try(:rel_type).present?
+  end
+
+  def self.set_link(object)
+    case object
+    when Participant
+      "/participant/#{object.name}"
+    when Site
+      object.url
+    when Comment
+      object.site.try(:url) || ""
+    else
+      ""
+    end
+  end
 
   def mechanize_for_links_to
     agent = Mechanize.new

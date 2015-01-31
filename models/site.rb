@@ -8,11 +8,18 @@ class Site
   has_many :out, :contains, model_class: Site
   has_many :in,  :referred_by, model_class: Site
   has_many :out, :referred_by, model_class: Site
+  validate :url_is_valid?
+
+
   def self.first_or_create(url)
     Site.find_by(url: url) ||  Site.create(url: url)
   end
 
   def perviously_scraped?
     previously_scaped
+  end
+
+  def url_is_valid?
+    self.url =~ /\A#{URI::regexp(['http', 'https'])}\z/
   end
 end

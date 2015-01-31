@@ -36,14 +36,14 @@ get '/json' do
   if File.exist?("results.json")
      results = File.read("results.json")
   else
-    results = [Site.all.map{|x| [x, x.rels.reject{|r| r.rel_type == :COMMENT}]}.flatten, Participant.all.map{|x| [x, x.rels.reject{|r|  r.rel_type == :COMMENTS }]}.flatten ].flatten
-      json_results = Tentacle.to_graph_json(results)
-      puts "!"*88
-      puts'finished'
-      f = File.open('results.json', 'w')
-      f.write(json_results)
-      f.close
-      json_results
+    results = process_results
+    json_results = Tentacle.to_graph_json(results)
+    puts "!"*88
+    puts'finished'
+    f = File.open('results.json', 'w')
+    f.write(json_results)
+    f.close
+    json_results
   end
 end
 
@@ -65,3 +65,13 @@ get '/delete' do
 end
 
 private
+def process_results
+  results = []
+  results << Site.all.map{|x| x } #you have to do this so it doesn't return a search proxy
+  results << Participant.all.map{|x| x}
+  site_relations        = Site.all.map(&:rels).flatten.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT || r.rel_type == :comment}
+  participant_relations = Participant.all.map(&:rels).flatten.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT}
+  results << site_relations
+  results << participant_relations
+  results.flatten
+end

@@ -4,7 +4,11 @@ class Parser
     @links = []
     @sites  = []
     @stem_site = stem_site
-    @site = Site.first_or_create(url)
+    begin #if there is something wrong with the url -- bail
+      @site = Site.first_or_create(url)
+    rescue
+      return unless @site
+    end
     # return if @site.previously_scraped?
     puts "~"*88
     puts "attempting to open #{@site.url}"
