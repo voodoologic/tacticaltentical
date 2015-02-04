@@ -152,7 +152,10 @@ class Tentacle
         uri = extract_link_from_googly_href(link)
         next if uri.to_s.empty?
         klass = choose_parser_class(uri.to_s)
+        begin
         klass.new(uri.to_s, @site).perform
+        rescue
+        end
       end
     end
   end
