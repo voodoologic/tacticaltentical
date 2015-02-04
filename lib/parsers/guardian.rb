@@ -30,7 +30,7 @@ class Guardian < Parser
   end
 
   def fetch_links
-    @links = @page.seach('.d-comment__body a')
+    @links = @page.search('.d-comment__body a')
   end
 
 end
