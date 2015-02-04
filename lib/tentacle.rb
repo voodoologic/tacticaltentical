@@ -104,8 +104,15 @@ class Tentacle
   end
 
   def self.has_known_screen_scraper?(object)
-    uri = URI.parse(object.url)
-    ["news.ycombinator.com", 'www.wired.com', 'www.telegraph.co.uk', 'www.theguardian.com', 'www.zdnet.com'].include? uri.host
+
+    if object.url =~ /\A#{URI::regexp(['http', 'https'])}\z/
+      uri = URI.parse(object.url)
+    end
+    if uri
+      ["news.ycombinator.com", 'www.wired.com', 'www.telegraph.co.uk', 'www.theguardian.com', 'www.zdnet.com'].include? uri.host
+    else
+      false
+    end
   end
 
   def self.contributes_to_more_than_one_site?(object)
