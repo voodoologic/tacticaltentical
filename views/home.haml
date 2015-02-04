@@ -15,7 +15,7 @@
           if ($(this).attr("class").split(" ").indexOf("visit") > -1) {
             escape(window.open(link))
           } else if ($(this).attr("class").split(" ").indexOf("extend") > -1) {
-            toastr.info("fetching the site, this may take a while.");
+            toastr.info("fetching the site, this may take a while.", {timeOut: 60000});
             $.ajax("/search", {
               data: {search: link},
               type: "POST",
