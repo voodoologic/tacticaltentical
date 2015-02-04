@@ -4,17 +4,31 @@
     Tactical Tentical
   %link{rel:  "stylesheet", href: "/application.css", type: "text/css", media: "all"}
   %link{rel:"stylesheet", href:"http://cdn.graphalchemist.com/alchemy.min.css"}
+  %script{src: "https://code.jquery.com/jquery-2.1.3.min.js"}
   %link{rel:"stylesheet", href:"https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css"}
   %script{src: "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.js"}
-  %script{src: "https://code.jquery.com/jquery-2.1.3.min.js"}
   %script{src:"http://cdn.graphalchemist.com/alchemy.min.js"}
   :javascript
+    $(document).ready(function(){
+        $('body').on("click", "div.toast button.visit, div.toast button.extend", function(){
+          link = $(this).parent("div").data("link");
+          if ($(this).attr("class").split(" ").indexOf("visit") > -1) {
+            escape(window.open(link))
+          } else if ($(this).attr("class").split(" ").indexOf("extend") > -1) {
+            toastr.info("fetching the site, this may take a while.");
+            $.ajax("/search", {
+              data: {search: link},
+              type: "POST",
+              timeout: 60000,
+              complete: function(){location.reload(true)}
+            });
+          }
+        });
         alchemy.begin({
           dataSource: '/json',
           clusterColours: ["#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E","#E6AB02"],
-          cluster: true,
           curvedEdges: true,
-          linkDistance: 10,
+          linkDistance: 5,
           nodeFilters: true,
           nodeTypes: {"role":["Site", "Participant", "Comment"]},
           edgeTypes: {"caption": ["Contains", "Referred by"]},
@@ -24,8 +38,15 @@
           search: true,
           nodeCaption: "caption",
           edgeCaption: "caption",
-          nodeMouseOver: function(node){;},
-          nodeClick: function(node){window.open(node.getProperties("link"));},
+          nodeClick: function(node){
+            if (node.getProperties("role") === "Site") {
+              toastr['info']( node.getProperties("link") + "<div class='funtimes' data-link='" + node.getProperties("link") + "'><button class='btn btn-primary tentical visit'>visit</button>" + "<button class='btn btn-primary tentical extend'>extend search</button></div>" , "SITE");
+            } else if ( node.getProperties("role") === "Participant" ) {
+              window.open( node.getProperties("link") );
+            } else if (node.getProperties("role") == "Comment") {
+              toastr['info'](node.getProperities("text"))
+            }
+          },
           "nodeStyle": {
             "Site": {
               color: "#FFF",
@@ -51,6 +72,26 @@
             }
           }
         })
+
+        toastr.options = {
+          "closeButton": true,
+          "debug": false,
+          "newestOnTop": true,
+          "progressBar": true,
+          "positionClass": "toast-top-right",
+          "onclick": null,
+          "showDuration": "300",
+          "hideDuration": "1000",
+          "timeOut": "5000",
+          "extendedTimeOut": "10000",
+          "showEasing": "swing",
+          "hideEasing": "linear",
+          "showMethod": "fadeIn",
+          "hideMethod": "fadeOut"
+        }
+      });
+  :css
+    #toast-container > div { opacity: 1 }
 %body
   #alchemy.alchemy{ style: "height: 100%; width: 100%"}
     %h1

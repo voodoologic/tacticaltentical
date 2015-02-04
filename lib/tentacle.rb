@@ -49,8 +49,9 @@ class Tentacle
           labels: [object.class.name],
           role: object.class.name,
           caption: object[:url] || object[:name],
+          text:  object[:text],
           link: URI.escape(link),
-          properties: [object.attributes],
+          properties: object.attributes,
           cluster: cluster
         }
       when Neo4j::Server::CypherNode
