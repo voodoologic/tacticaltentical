@@ -58,6 +58,15 @@ get '/statuses' do
     ws.onmessage do |msg|
       message = JSON.parse(msg)
       Tentacle.new(url: message["extend"], websocket: ws) if message["extend"]
+      FileUtils.rm 'results.json', force: true
+      results = process_results
+      json_results = Tentacle.to_graph_json(results)
+      puts "!"*88
+      puts'finished'
+      f = File.open('results.json', 'w')
+      f.write(json_results)
+      f.close
+      ws.send("reload the page")
       EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
     end
     ws.onclose do
@@ -85,6 +94,7 @@ get '/delete' do
 end
 
 private
+
 def process_results
   results = []
   results << Site.all.map{|x| x } #you have to do this so it doesn't return a search proxy
