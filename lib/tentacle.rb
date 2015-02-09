@@ -158,7 +158,7 @@ class Tentacle
     unless page.body.match("did not match any documents")
       non_cached_links.map do |link|
         puts "found referrence link: " + "@"*44
-        @websocket.send(  "found referrence link: #{link.text}" ) if @websocket
+        @websocket.send( "found referrence link: #{link.text.encode!('UTF-8', 'UTF-8', :invalid => :replace)}" ) if @websocket
         puts link.text
         puts "@"*88
         uri = extract_link_from_googly_href(link)
