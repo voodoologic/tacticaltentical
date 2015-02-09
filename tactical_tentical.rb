@@ -52,7 +52,7 @@ end
 get '/statuses' do
   request.websocket do |ws|
     ws.onopen do
-      ws.send("Hello World!")
+      ws.send("websocket online")
       settings.sockets << ws
     end
     ws.onmessage do |msg|
