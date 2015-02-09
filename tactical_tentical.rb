@@ -56,7 +56,6 @@ get '/statuses' do
       settings.sockets << ws
     end
     ws.onmessage do |msg|
-      binding.pry
       message = JSON.parse(msg)
       Tentacle.new(url: message["extend"], websocket: ws) if message["extend"]
       EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
