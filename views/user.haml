@@ -27,7 +27,8 @@
         alchemy.begin({
           dataSource: escape('/json' + window.location.pathname),
           clusterColours: ["#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E","#E6AB02"],
-          curvedEdges: true,
+          curvedEdges: false,
+          directedEdges: true,
           linkDistance: 5,
           nodeFilters: true,
           nodeTypes: {"role":["Site", "Participant", "Comment"]},

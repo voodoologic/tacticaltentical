@@ -16,18 +16,12 @@
             escape(window.open(link))
           } else if ($(this).attr("class").split(" ").indexOf("extend") > -1) {
             toastr.info("fetching the site, this may take a while.", {timeOut: 60000});
-            $.ajax("/search", {
-              data: {search: link},
-              type: "POST",
-              timeout: 60000,
-              complete: function(){location.reload(true)}
-            });
           }
         });
         alchemy.begin({
           dataSource: '/json',
           clusterColours: ["#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E","#E6AB02"],
-          curvedEdges: true,
+          curvedEdges: false,
           linkDistance: 5,
           nodeFilters: true,
           nodeTypes: {"role":["Site", "Participant", "Comment"]},
@@ -40,7 +34,12 @@
           edgeCaption: "caption",
           nodeClick: function(node){
             if (node.getProperties("role") === "Site") {
-              toastr['info']( node.getProperties("link") + "<div class='funtimes' data-link='" + node.getProperties("link") + "'><button class='btn btn-primary tentical visit'>visit</button>" + "<button class='btn btn-primary tentical extend'>extend search</button></div>" , "SITE");
+              toastr['info']( node.getProperties("link") +
+              "<div class='funtimes' data-link='" +
+              node.getProperties("link") +
+              "'><button class='btn btn-primary tentical visit'>visit</button>" + 
+              "<button class='btn btn-primary tentical extend'>extend search</button></div>" 
+              , "SITE");
             } else if ( node.getProperties("role") === "Participant" ) {
               window.open( node.getProperties("link") );
             } else if (node.getProperties("role") == "Comment") {
@@ -76,13 +75,13 @@
         toastr.options = {
           "closeButton": true,
           "debug": false,
-          "newestOnTop": true,
+          "newestOnTop": false,
           "progressBar": true,
           "positionClass": "toast-top-right",
           "onclick": null,
           "showDuration": "300",
           "hideDuration": "1000",
-          "timeOut": "5000",
+          "timeOut": "50000",
           "extendedTimeOut": "10000",
           "showEasing": "swing",
           "hideEasing": "linear",
@@ -104,3 +103,24 @@
       %form{ action: 'delete', method: "GET", style: "float: left"}
         %input{type: "submit", value: "deltet all"}
 
+:javascript
+  window.onload = function(){
+      (function(){
+        var show = function(text){
+          return toastr.info(text);
+        };
+
+        var ws       = new WebSocket('ws://' + window.location.host + "/statuses");
+        ws.onopen    = function()  { show('websocket opened'); };
+        ws.onclose   = function()  { show('websocket closed'); }
+        ws.onmessage = function(m) { show('websocket message: ' +  m.data); };
+
+          $(document).ready(function(){
+            $("body").on("click", ".funtimes .tentical.extend", function(){
+              link = $(this).parent(".funtimes").data("link")
+              ws.send(JSON.stringify({extend: link}))
+            })
+          })
+
+      })();
+    }

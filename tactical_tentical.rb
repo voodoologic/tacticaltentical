@@ -6,12 +6,14 @@ require 'haml'
 require 'pry'
 require 'neo4j'
 require 'fileutils'
+require 'sinatra-websocket'
 
 require_relative 'lib/tentacle'
 
 Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'] || "http://localhost:7474")
 
 set :server, 'thin'
+set :sockets, []
 
 # timeout 60
 
@@ -21,7 +23,7 @@ get '/' do
 end
 
 post '/search' do
-  Tentacle.new(params.fetch("search"))
+  Tentacle.new(url: params.fetch("search"))
   FileUtils.rm 'results.json', force: true
   redirect "/"
 end
@@ -44,6 +46,25 @@ get '/json' do
     f.write(json_results)
     f.close
     json_results
+  end
+end
+
+get '/statuses' do
+  request.websocket do |ws|
+    ws.onopen do
+      ws.send("Hello World!")
+      settings.sockets << ws
+    end
+    ws.onmessage do |msg|
+      binding.pry
+      message = JSON.parse(msg)
+      Tentacle.new(url: message["extend"], websocket: ws) if message["extend"]
+      EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+    end
+    ws.onclose do
+      warn("websocket closed")
+      settings.sockets.delete(ws)
+    end
   end
 end
 

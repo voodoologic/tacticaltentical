@@ -1,6 +1,7 @@
 class Parser
   attr_reader :sites
-  def initialize(url, stem_site= nil)
+  def initialize( url: nil, stem_site: nil, websocket: nil )
+    @websocket = websocket
     @links = []
     @sites  = []
     @stem_site = stem_site
@@ -11,6 +12,7 @@ class Parser
     end
     # return if @site.previously_scraped?
     puts "~"*88
+    @websocket.send("attempting to open #{@site.url}") if @websocket
     puts "attempting to open #{@site.url}"
     puts "~"*88
     begin
@@ -31,6 +33,7 @@ class Parser
   def perform
     if @stem_site.present? && !@stem_site.referred_by.map(&:url).include?( @site.url ) && @stem_site != @site
       puts ")"*88
+      @websocket.send(@stem_site.neo_id.to_s  + @stem_site.url + "  >>>   "   +  @site.neo_id.to_s + @site.url) if @websocket
       puts @stem_site.neo_id.to_s  + @stem_site.url + "  >>>   "   +  @site.neo_id.to_s + @site.url
       puts ")"*88
       @stem_site.referred_by << @site
@@ -41,6 +44,7 @@ class Parser
     end
     @sites.each do |site|
       puts "<"*88
+      @websocket.send(site.url + "<<<" + @site.url) if @websocket
       puts site.url + "<<<" + @site.url
       puts "<"*88
       @site.contains << site if @site.url != site.url && !@site.contains.include?(site)

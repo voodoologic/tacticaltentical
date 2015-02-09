@@ -11,7 +11,8 @@ require 'nokogiri'
 require 'mechanize'
 Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'])
 class Tentacle
-  def initialize(url = "https://news.ycombinator.com/item?id=8792778", depth = 2)
+  def initialize(url: "https://news.ycombinator.com/item?id=8792778", websocket: nil, depth:  2)
+    @websocket = websocket
     @depth ||= depth
     @seed_url = prep_url(url)
     @site  = Site.first_or_create(url)
@@ -21,11 +22,12 @@ class Tentacle
   def perform
     url = @site.url
     seed_klass = choose_parser_class(url)
-    @parser = seed_klass.new(url)
+    @parser = seed_klass.new(url: url, websocket: @websocket)
     mechanize_for_links_to
     @parser.sites.each do |site|
       begin
         klass = choose_parser_class(site.url)
+        @websocket.send( "parser class #{klass.to_s} to parse #{site.url}" ) if @websocket
         puts "parser class #{klass.to_s} to parse #{site.url}"
         klass.new(site.url, @site).perform
       rescue
@@ -78,6 +80,7 @@ class Tentacle
         fail "Invalid value found: #{object.inspect}"
       end
     end
+    @websocket.send( "done" ) if @websocket
     puts "done"
 
     {
@@ -146,6 +149,7 @@ class Tentacle
     google_form.q = link_to_query
 
     puts "submitting search to google"
+    @websocket.send(  "results returned from google" ) if @websocket
     page = agent.submit(google_form, google_form.buttons.first)
     puts "results returned from google"
     n_page = Nokogiri::HTML(page.body)
@@ -154,6 +158,7 @@ class Tentacle
     unless page.body.match("did not match any documents")
       non_cached_links.map do |link|
         puts "found referrence link: " + "@"*44
+        @websocket.send(  "found referrence link: #{link.text}" ) if @websocket
         puts link.text
         puts "@"*88
         uri = extract_link_from_googly_href(link)
