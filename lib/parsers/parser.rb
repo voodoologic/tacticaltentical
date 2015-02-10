@@ -21,7 +21,7 @@ class Parser
       # if @page.text.empty?
         @wait = Watir::Browser.new(:phantomjs)
         @wait.goto @site.url
-        @wait.scroll.to :bottom
+        @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
         sleep 3
         @page = Nokogiri::HTML(@wait.html)
         disqus_url = @page.search("iframe#dsq-2")
