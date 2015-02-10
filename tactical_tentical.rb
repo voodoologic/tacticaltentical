@@ -39,13 +39,15 @@ get '/json' do
      results = File.read("results.json")
   else
     results = process_results
-    json_results = Tentacle.to_graph_json(results)
-    puts "!"*88
-    puts'finished'
-    f = File.open('results.json', 'w')
-    f.write(json_results)
-    f.close
-    json_results
+    json_results = nil
+    t = Thread.new do
+      json_results = Tentacle.to_graph_json(results)
+      Thread.current.thread_variable_set(:results , json_results)
+      f = File.open('results.json', 'w')
+      f.write(json_results)
+      f.close
+    end.join
+    json_results = t.thread_variable_get(:results)
   end
 end
 

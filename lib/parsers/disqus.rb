@@ -4,6 +4,8 @@ class Disqus < Parser
   def perform
     @wait = Watir::Browser.new(:phantomjs)
     @wait.goto @site.url
+    @wait.scroll.to :bottom
+    sleep 2
     @page = Nokogiri::HTML(@wait.html)
     disqus_url = @page.search("iframe#dsq-2")
     if disqus_url.first.nil?

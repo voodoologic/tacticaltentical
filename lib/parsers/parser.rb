@@ -16,16 +16,25 @@ class Parser
     puts "attempting to open #{@site.url}"
     puts "~"*88
     begin
-      url = open(@site.url, read_timeout: 10)
-      @page = Nokogiri::HTML(url)
-      if @page.text.empty?
-        @wait = Watir::Browser.new(:phantomjs)
+      # url = open(@site.url, read_timeout: 10)
+      # @page = nokogiri::html(url)
+      # if @page.text.empty?
+        @wait = Watir::Browser.new(:ff)
         @wait.goto @site.url
+        @wait.sroll.to :bottom
+        sleep 3
         @page = Nokogiri::HTML(@wait.html)
+        disqus_url = @page.search("iframe#dsq-2")
+        if disqus_url.first.present?
+          puts "this is a disqus forum.. :)"
+          Disqus.new(url: @site.url, websocket: @websocket)
+          return
+        end
         @wait.close
-      end
+      # end
       perform
-    rescue
+    rescue => e
+      puts e;
       @site.previously_scraped = false
     end
   end
@@ -39,7 +48,7 @@ class Parser
       @stem_site.referred_by << @site
     end
     @links.each do |link|
-      @sites << Site.first_or_create(link[:href])
+      @sites << site.first_or_create(link[:href])
       @sites.uniq!
     end
     @sites.each do |site|
@@ -54,9 +63,9 @@ class Parser
 
   def save_pair(name, text)
     return if name.empty? || text.empty?
-    participant = Participant.first_or_create(name)
+    participant = participant.first_or_create(name)
     @site.participants << participant unless @site.participants.include? participant
-    comment = Comment.find_by(text: text) || Comment.create(text: text)
+    comment = comment.find_by(text: text) || comment.create(text: text)
     participant.comments << comment unless participant.comments.include? comment
     @site.comments << comment unless @site.comments.include? comment
   end
