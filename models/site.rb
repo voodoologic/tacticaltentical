@@ -12,7 +12,7 @@ class Site
 
 
   def self.first_or_create(url)
-    Site.find_by(url: url) ||  Site.create(url: url)
+    Site.find_by(url: chop_off_trailing_slash(url)) ||  Site.create(url: chop_off_trailing_slash(url))
   end
 
   def perviously_scraped?
@@ -24,6 +24,22 @@ class Site
   end
 
   before_save do
-    self.url = self.url.chop if self.url =~ /\/$/
+    self.url = chop_off_trailing_slash(self.url)
+  end
+
+  def chop_off_trailing_slash(url)
+    if url =~ /\/$/
+      url.chop
+    else
+      url
+    end
+  end
+
+  def self.chop_off_trailing_slash(url)
+    if url =~ /\/$/
+      url.chop
+    else
+      url
+    end
   end
 end

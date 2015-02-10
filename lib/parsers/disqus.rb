@@ -2,8 +2,9 @@ require_relative 'parser'
 class Disqus < Parser
 
   def perform
-    @wait = Watir::Browser.new(:phantomjs)
+    @wait = Watir::Browser.new(:ff)
     @wait.goto @site.url
+    sleep 1
     @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
     sleep 3
     @page = Nokogiri::HTML(@wait.html)

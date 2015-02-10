@@ -25,11 +25,11 @@ class Parser
         sleep 3
         @page = Nokogiri::HTML(@wait.html)
         disqus_url = @page.search("iframe#dsq-2")
-        if disqus_url.first.present?
-          puts "this is a disqus forum.. :)"
-          Disqus.new(url: @site.url, websocket: @websocket)
-          return
-        end
+        # if disqus_url.first.present?
+        #   puts "this is a disqus forum.. :)"
+        #   Disqus.new(url: @site.url, websocket: @websocket)
+        #   return
+        # end
         @wait.close
       # end
       perform
@@ -47,10 +47,12 @@ class Parser
       puts ")"*88
       @stem_site.referred_by << @site
     end
+
     @links.each do |link|
-      @sites << site.first_or_create(link[:href])
+      @sites << Site.first_or_create(link[:href])
       @sites.uniq!
     end
+
     @sites.each do |site|
       puts "<"*88
       @websocket.send(site.url + "<<<" + @site.url) if @websocket
@@ -58,14 +60,14 @@ class Parser
       puts "<"*88
       @site.contains << site if @site.url != site.url && !@site.contains.include?(site)
     end
-    # @site.previously_scraped = true
+    @site.previously_scraped = true
   end
 
   def save_pair(name, text)
     return if name.empty? || text.empty?
-    participant = participant.first_or_create(name)
+    participant = Participant.first_or_create(name)
     @site.participants << participant unless @site.participants.include? participant
-    comment = comment.find_by(text: text) || comment.create(text: text)
+    comment = Comment.find_by(text: text) || Comment.create(text: text)
     participant.comments << comment unless participant.comments.include? comment
     @site.comments << comment unless @site.comments.include? comment
   end
