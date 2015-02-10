@@ -19,9 +19,9 @@ class Parser
       # url = open(@site.url, read_timeout: 10)
       # @page = nokogiri::html(url)
       # if @page.text.empty?
-        @wait = Watir::Browser.new(:ff)
+        @wait = Watir::Browser.new(:phantomjs)
         @wait.goto @site.url
-        @wait.sroll.to :bottom
+        @wait.scroll.to :bottom
         sleep 3
         @page = Nokogiri::HTML(@wait.html)
         disqus_url = @page.search("iframe#dsq-2")
