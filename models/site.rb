@@ -22,4 +22,8 @@ class Site
   def url_is_valid?
     self.url =~ /\A#{URI::regexp(['http', 'https'])}\z/
   end
+
+  before_save do
+    self.url = self.url.chop if self.url =~ /\/$/
+  end
 end
