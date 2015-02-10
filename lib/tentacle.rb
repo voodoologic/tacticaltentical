@@ -187,7 +187,7 @@ class Tentacle
     case uri.host
     when "news.ycombinator.com"
       Ycombinator
-    when 'www.wired.com', 'www.telegraph.co.uk'
+    when 'www.wired.com', 'www.telegraph.co.uk', 'www.theatlantic.com'
       Disqus
     when 'www.theguardian.com'
       Guardian

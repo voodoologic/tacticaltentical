@@ -1,3 +1,4 @@
+require_relative 'parser'
 class Guardian < Parser
   def perform
     @wait = Watir::Browser.new(:phantomjs)
