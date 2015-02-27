@@ -24,7 +24,7 @@ class Parser
         @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
         sleep 3
         @page = Nokogiri::HTML(@wait.html)
-        disqus_url = @page.search("iframe#dsq-2")
+        # disqus_url = @page.search("iframe#dsq-2")
         # if disqus_url.first.present?
         #   puts "this is a disqus forum.. :)"
         #   Disqus.new(url: @site.url, websocket: @websocket)
