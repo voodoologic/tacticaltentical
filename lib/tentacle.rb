@@ -5,7 +5,7 @@ require_relative '../models/participant'
 require_relative '../models/comment'
 require_relative 'parsers'
 require 'rubygems'
-require 'watir'
+# require 'watir'
 require 'open-uri'
 require 'nokogiri'
 require 'mechanize'
@@ -77,7 +77,7 @@ class Tentacle
           properties: object.props
         }
       else
-        fail "Invalid value found: #{object.inspect}"
+        nil
       end
     end
     @websocket.send( "done" ) if @websocket

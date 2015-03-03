@@ -5,8 +5,16 @@ require 'sass'
 require 'haml'
 require 'pry'
 require 'neo4j'
-require 'fileutils'
 require 'sinatra-websocket'
+require 'watir-webdriver'
+require 'mongo'
+include Mongo
+
+configure do
+  conn = MongoClient.new("localhost", 27017)
+  set :mongo_connection, conn
+  set :mongo_db, conn.db('test')
+end
 
 require_relative 'lib/tentacle'
 
@@ -24,7 +32,6 @@ end
 
 post '/search' do
   Tentacle.new(url: params.fetch("search"))
-  FileUtils.rm 'results.json', force: true
   redirect "/"
 end
 
@@ -35,20 +42,8 @@ end
 
 get '/json' do
   # [Site,Comment, Participant].each{|k| k.all.each(&:destroy)}
-  if File.exist?("results.json")
-     results = File.read("results.json")
-  else
-    results = process_results
-    json_results = nil
-    t = Thread.new do
-      json_results = Tentacle.to_graph_json(results)
-      Thread.current.thread_variable_set(:results , json_results)
-      f = File.open('results.json', 'w')
-      f.write(json_results)
-      f.close
-    end.join
-    json_results = t.thread_variable_get(:results)
-  end
+  results = process_results
+  Tentacle.to_graph_json(results)
 end
 
 get '/statuses' do
@@ -61,13 +56,8 @@ get '/statuses' do
       message = JSON.parse(msg)
       Tentacle.new(url: message["extend"], websocket: ws) if message["extend"]
       FileUtils.rm 'results.json', force: true
-      results = process_results
-      json_results = Tentacle.to_graph_json(results)
       puts "!"*88
       puts'finished'
-      f = File.open('results.json', 'w')
-      f.write(json_results)
-      f.close
       ws.send("reload the page")
       EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
     end

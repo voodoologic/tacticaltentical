@@ -16,22 +16,12 @@ class Parser
     puts "attempting to open #{@site.url}"
     puts "~"*88
     begin
-      # url = open(@site.url, read_timeout: 10)
-      # @page = nokogiri::html(url)
-      # if @page.text.empty?
-        @wait = Watir::Browser.new(:phantomjs)
-        @wait.goto @site.url
-        @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        sleep 3
-        @page = Nokogiri::HTML(@wait.html)
-        # disqus_url = @page.search("iframe#dsq-2")
-        # if disqus_url.first.present?
-        #   puts "this is a disqus forum.. :)"
-        #   Disqus.new(url: @site.url, websocket: @websocket)
-        #   return
-        # end
-        @wait.close
-      # end
+      @wait = Watir::Browser.new(:phantomjs)
+      @wait.goto @site.url
+      @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+      sleep 1
+      @page = Nokogiri::HTML(@wait.html)
+      @wait.close
       perform
     rescue => e
       puts e;

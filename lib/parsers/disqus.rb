@@ -2,11 +2,17 @@ require_relative 'parser'
 class Disqus < Parser
 
   def perform
-    @wait = Watir::Browser.new(:ff)
+    begin
+    @wait = Watir::Browser.new
     @wait.goto @site.url
-    sleep 1
+    @wait.wait
     @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-    sleep 3
+    @wait.wait
+    while !@wait.link(data_ui: 'commentsOpen').present? do
+      sleep 1
+      puts 'waiting for discus link to show up in wired.'
+    end
+
     @page = Nokogiri::HTML(@wait.html)
     disqus_url = @page.search("iframe#dsq-2")
     if disqus_url.first.nil?
@@ -14,8 +20,21 @@ class Disqus < Parser
       return
     end
     url = disqus_url.first[:src]
+
     @wait.goto(url)
-    sleep 1
+
+    while @wait.link(data_action:'reveal').present?
+      @wait.link(data_action:'reveal').click
+    end
+
+    while @wait.link(data_action: 'more-posts').present? do
+      @wait.link(data_action: 'more-posts').click
+      @websocket.send("accessing more comments") if @websocket
+      @wait.wait(1)
+      while @wait.link(data_action:'reveal').present?
+        @wait.link(data_action:'reveal').click
+      end
+    end
     @disqus_page = Nokogiri::HTML(@wait.html)
     @disqus_page.search(".post-content").each do |blob|
       user = fetch_user(blob)
