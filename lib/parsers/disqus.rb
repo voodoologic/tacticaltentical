@@ -2,15 +2,18 @@ require_relative 'parser'
 class Disqus < Parser
 
   def perform
-    begin
-    @wait = Watir::Browser.new
+    @wait = Watir::Browser.new :phantomjs
     @wait.goto @site.url
-    @wait.wait
+    @wait.wait(1)
     @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-    @wait.wait
+    @wait.wait(10)
+    timeout = 5
+    attempt = 0
     while !@wait.link(data_ui: 'commentsOpen').present? do
       sleep 1
       puts 'waiting for discus link to show up in wired.'
+      attempt += 1
+      break if attempt >= timeout
     end
 
     @page = Nokogiri::HTML(@wait.html)
@@ -27,8 +30,11 @@ class Disqus < Parser
       @wait.link(data_action:'reveal').click
     end
 
+    page ||= 0
     while @wait.link(data_action: 'more-posts').present? do
       @wait.link(data_action: 'more-posts').click
+      puts "fetching page #{page}"
+      page += 1
       @websocket.send("accessing more comments") if @websocket
       @wait.wait(1)
       while @wait.link(data_action:'reveal').present?

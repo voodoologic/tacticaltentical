@@ -7,14 +7,7 @@ require 'pry'
 require 'neo4j'
 require 'sinatra-websocket'
 require 'watir-webdriver'
-require 'mongo'
-include Mongo
-
-configure do
-  conn = MongoClient.new("localhost", 27017)
-  set :mongo_connection, conn
-  set :mongo_db, conn.db('test')
-end
+require "sinatra/reloader" if development?
 
 require_relative 'lib/tentacle'
 

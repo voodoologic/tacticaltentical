@@ -15,18 +15,17 @@ class Parser
     @websocket.send("attempting to open #{@site.url}") if @websocket
     puts "attempting to open #{@site.url}"
     puts "~"*88
-    begin
-      @wait = Watir::Browser.new(:phantomjs)
-      @wait.goto @site.url
-      @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-      sleep 1
-      @page = Nokogiri::HTML(@wait.html)
-      @wait.close
-      perform
-    rescue => e
-      puts e;
-      @site.previously_scraped = false
-    end
+    # begin
+    #   @wait = Watir::Browser.new(:phantomjs)
+    #   @wait.goto @site.url
+    #   @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    #   @page = Nokogiri::HTML(@wait.html)
+    #   @wait.close
+    #   perform
+    # rescue => e
+    #   puts e;
+    #   @site.previously_scraped = false
+    # end
   end
 
   def perform

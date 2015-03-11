@@ -165,8 +165,11 @@ class Tentacle
         next if uri.to_s.empty?
         klass = choose_parser_class(uri.to_s)
         begin
-        klass.new(uri.to_s, @site).perform
-        rescue
+          klass.new(url: uri.to_s, stem_site: @site, websocket: @websocket ).perform
+        rescue => e
+          puts "@@@@@@@@@ #{__FILE__}:#{__LINE__}"
+          puts "\n********** error = #{ e.inspect }"
+          binding.pry
         end
       end
     end
