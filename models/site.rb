@@ -9,6 +9,8 @@ class Site
   has_many :in,  :referred_by, model_class: Site
   has_many :out, :referred_by, model_class: Site
   validate :url_is_valid?
+  validates_uniqueness_of :url
+  validates_presence_of :url
 
 
   def self.first_or_create(url)

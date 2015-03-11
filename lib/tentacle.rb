@@ -23,6 +23,7 @@ class Tentacle
     url = @site.url
     seed_klass = choose_parser_class(url)
     @parser = seed_klass.new(url: url, websocket: @websocket)
+    @parser.perform
     mechanize_for_links_to
     @parser.sites.each do |site|
       begin
@@ -30,7 +31,8 @@ class Tentacle
         @websocket.send( "parser class #{klass.to_s} to parse #{site.url}" ) if @websocket
         puts "parser class #{klass.to_s} to parse #{site.url}"
         klass.new(site.url, @site).perform
-      rescue
+      rescue => e
+        puts e
         next
       end
     end
@@ -169,7 +171,6 @@ class Tentacle
         rescue => e
           puts "@@@@@@@@@ #{__FILE__}:#{__LINE__}"
           puts "\n********** error = #{ e.inspect }"
-          binding.pry
         end
       end
     end

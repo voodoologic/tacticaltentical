@@ -2,6 +2,7 @@ require_relative 'parser'
 class Disqus < Parser
 
   def perform
+    return if @site.previously_scraped == true
     @wait = Watir::Browser.new :phantomjs
     @wait.goto @site.url
     @wait.wait(1)
@@ -36,7 +37,7 @@ class Disqus < Parser
       puts "fetching page #{page}"
       page += 1
       @websocket.send("accessing more comments") if @websocket
-      @wait.wait(1)
+      @wait.wait(3)
       while @wait.link(data_action:'reveal').present?
         @wait.link(data_action:'reveal').click
       end
@@ -50,6 +51,10 @@ class Disqus < Parser
     fetch_links
     @wait.close
     super
+  rescue Watir::Wait::TimeoutError
+    puts "timeout error"
+  rescue StandardError
+    puts e
   end
 
   def fetch_user(blob)
