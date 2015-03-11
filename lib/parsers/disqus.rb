@@ -5,9 +5,9 @@ class Disqus < Parser
     return if @site.previously_scraped == true
     @wait = Watir::Browser.new :phantomjs
     @wait.goto @site.url
-    @wait.wait(1)
-    @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
     @wait.wait(10)
+    @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    @wait.wait(5)
     timeout = 5
     attempt = 0
     while !@wait.link(data_ui: 'commentsOpen').present? do
