@@ -168,6 +168,8 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.6)
+    watir-scroll (0.1.0)
+      watir-webdriver
     watir-webdriver (0.7.0)
       selenium-webdriver (>= 2.45)
     webrobots (0.1.1)
@@ -189,4 +191,5 @@ DEPENDENCIES
   sinatra-contrib
   sinatra-websocket
   thin
+  watir-scroll
   watir-webdriver

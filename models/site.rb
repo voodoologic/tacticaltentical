@@ -14,7 +14,6 @@ class Site
 
 
   def self.first_or_create(url)
-    binding.pry if url.nil?
     Site.find_by(url: chop_off_trailing_slash(url)) ||  Site.create(url: chop_off_trailing_slash(url))
   end
 

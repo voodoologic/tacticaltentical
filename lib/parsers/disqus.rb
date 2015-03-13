@@ -67,6 +67,7 @@ class Disqus < Parser
 
   def fetch_links(blob, &block)
     comment_links = blob.search('.post-message a')
+    comment_links = comment_links.reject{|link| link[:href].nil?}
     comment_links.each do |link|
       site = Site.first_or_create(link[:href])
       puts "found links in comments: #{link[:href]}"
