@@ -5,9 +5,9 @@ class Disqus < Parser
     return if @site.previously_scraped == true
     @wait = Watir::Browser.new :phantomjs
     @wait.goto @site.url
-    @wait.wait(10)
-    @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
     @wait.wait(5)
+    @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    @wait.wait(3)
     timeout = 5
     attempt = 0
     while !@wait.link(data_ui: 'commentsOpen').present? do
@@ -44,11 +44,11 @@ class Disqus < Parser
     end
     @disqus_page = Nokogiri::HTML(@wait.html)
     @disqus_page.search(".post-content").each do |blob|
-      user = fetch_user(blob)
+      user    = fetch_user(blob)
       comment = fetch_comment(blob)
-      save_pair(user, comment)
+      links   = fetch_links(blob)
+      save_pair(user, comment, links)
     end
-    fetch_links
     @wait.close
     super
   rescue Watir::Wait::TimeoutError
@@ -62,12 +62,17 @@ class Disqus < Parser
   end
 
   def fetch_comment(blob)
-    blob.search('p').text.squish
+    blob.search('.post-message').text.squish
   end
 
-  def fetch_links
-    @links = @disqus_page.search(".post-message a")
-    puts "found links in comments: "
-    puts @links.map{|x| x[:href]}.join(" ")
+  def fetch_links(blob, &block)
+    comment_links = blob.search('.post-message a')
+    comment_links.each do |link|
+      site = Site.first_or_create(link[:href])
+      puts "found links in comments: #{link[:href]}"
+      @sites << site if site.present?
+      yield link if block.given?
+    end
+    comment_links
   end
 end

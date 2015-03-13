@@ -3,6 +3,7 @@ class Comment
   property :text
   index :name
   has_one(:in, :participant)
+  has_many :out, :sites, type: :site
   has_one :in, :site
   def self.find_or_create(text)
     Comment.find_by(text: text) || Comment.create(text: text)

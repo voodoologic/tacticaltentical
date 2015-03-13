@@ -2,7 +2,6 @@ class Parser
   attr_reader :sites
   def initialize( url: nil, stem_site: nil, websocket: nil )
     @websocket = websocket
-    @links = []
     @sites  = []
     @stem_site = stem_site
     begin #if there is something wrong with the url -- bail
@@ -26,11 +25,6 @@ class Parser
       @stem_site.referred_by << @site
     end
 
-    @links.each do |link|
-      @sites << Site.first_or_create(link[:href])
-      @sites.uniq!
-    end
-
     @sites.each do |site|
       puts "<"*88
       @websocket.send(site.url + "<<<" + @site.url) if @websocket
@@ -41,11 +35,15 @@ class Parser
     @site.previously_scraped = true
   end
 
-  def save_pair(name, text)
+  def save_pair(name, text, links = [])
     return if name.empty? || text.empty?
     participant = Participant.first_or_create(name)
     @site.participants << participant unless @site.participants.include? participant
     comment = Comment.find_by(text: text) || Comment.create(text: text)
+    links.each do |link|
+      site = Site.first_or_create(link[:href])
+      comment.sites << site if site.present?
+    end
     participant.comments << comment unless participant.comments.include? comment
     @site.comments << comment unless @site.comments.include? comment
   end

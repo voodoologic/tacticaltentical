@@ -195,8 +195,8 @@ class Tentacle
       Disqus
     when 'www.theguardian.com'
       Guardian
-    when 'www.zdnet.com'
-      Zdnet
+    when 'www.salon.com', 'www.zdnet.com'
+      Fyre
     else
       Parser
     end

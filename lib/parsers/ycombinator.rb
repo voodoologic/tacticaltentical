@@ -5,11 +5,11 @@ class Ycombinator < Parser
     groups = @page.search('.default')
     groups.each do |blob|
       participant = scrape_participant(blob).text
-      comment = scrape_comment(blob).text
+      comment     = scrape_comment(blob).text
+      links       =  fetch_links(blob)
       next if (comment.empty? || participant.empty?)
-      save_pair(participant, comment)
+      save_pair(participant, comment, links)
     end
-    fetch_links
     super
   end
 
@@ -21,7 +21,11 @@ class Ycombinator < Parser
     blob.search('.comment font')
   end
 
-  def fetch_links
-    @links = @page.search(".comment a")
+  def fetch_links(blob)
+    links = blob.search(".comment a")
+    links.each do |link|
+      site = Site.first_or_create(link[:href])
+      @sites << site if site.present?
+    end
   end
 end

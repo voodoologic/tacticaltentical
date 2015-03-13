@@ -15,9 +15,9 @@ class Guardian < Parser
     @page.search(".d-comment__inner--response").each do |blob|
       user    = fetch_user(blob)
       comment = fetch_comment(blob)
-      save_pair(user, comment)
+      links   = fetc_links(blob)
+      save_pair(user, comment, links)
     end
-    fetch_links
     @wait.close
     super
   end
@@ -30,8 +30,14 @@ class Guardian < Parser
     blob.search('.d-comment__body').text.squish
   end
 
-  def fetch_links
-    @links = @page.search('.d-comment__body a')
+  def fetch_links(blob)
+    links = blob.search('.d-comment__body a')
+    links.each do |link|
+      site = Site.first_or_create(link[:href])
+      puts "found links in comment: #{link[:href]}"
+      @sites << site if site.present?
+    end
+    links
   end
 
 end
