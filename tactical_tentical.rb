@@ -46,7 +46,6 @@ end
 
 get '/json' do
   # [Site,Comment, Participant].each{|k| k.all.each(&:destroy)}
-  binding.pry
   root_site = "http://www.salon.com/2015/03/12/the_george_w_bush_email_scandal_the_media_has_conveniently_forgotten_partner"
   site_cache = Result.where(url: root_site)
   site_cache = Result.first unless site_cache.exist?
