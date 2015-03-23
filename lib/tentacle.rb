@@ -148,22 +148,6 @@ class Tentacle
     st.google_reverse_search
   end
 
-  def choose_parser_class(url)
-    uri = URI.parse(url)
-    case uri.host
-    when "news.ycombinator.com"
-      Ycombinator
-    when 'www.wired.com', 'www.telegraph.co.uk', 'www.theatlantic.com'
-      Disqus
-    when 'www.theguardian.com'
-      Guardian
-    when 'www.salon.com', 'www.zdnet.com'
-      Fyre
-    else
-      Parser
-    end
-  end
-
   def prep_url(url)
     url.gsub(/https?\:\/\//, "")
   end

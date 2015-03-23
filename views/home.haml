@@ -23,7 +23,7 @@
     %form{ action: 'delete', method: "GET", style: "float: left"}
       %input{type: "submit", value: "deltet all"}
   #alchemy.alchemy{ style: "height: 100%; width: 100%"}
-    %ul
+    -# %ul
       - @sites.each do |site|
         %li 
           %a{href: "/site/#{site.id}"}

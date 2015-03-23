@@ -1,7 +1,7 @@
 class SearchTool
-  def new( url , websocket = nil)
+  def initialize( site , websocket = nil)
     @websocket = websocket
-    @url = url
+    @site = site
   end
 
   def google_reverse_search
@@ -51,4 +51,21 @@ class SearchTool
     removed_protocal = @site.url.gsub(/https?:\/\//, "")
     "link: #{removed_protocal}"
   end
+  
+  def choose_parser_class(url)
+    uri = URI.parse(url)
+    case uri.host
+    when "news.ycombinator.com"
+      Ycombinator
+    when 'www.wired.com', 'www.telegraph.co.uk', 'www.theatlantic.com'
+      Disqus
+    when 'www.theguardian.com'
+      Guardian
+    when 'www.salon.com', 'www.zdnet.com'
+      Fyre
+    else
+      Parser
+    end
+  end
+
 end
