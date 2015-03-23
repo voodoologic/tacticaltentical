@@ -1,6 +1,7 @@
 class SearchTool
-  def new(websocket=nil)
+  def new( url , websocket = nil)
     @websocket = websocket
+    @url = url
   end
 
   def google_reverse_search

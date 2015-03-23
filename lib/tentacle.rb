@@ -144,7 +144,7 @@ class Tentacle
   end
 
   def mechanize_for_links_to
-    st = SearchTool.new
+    st = SearchTool.new(@site,@websocket)
     st.google_reverse_search
   end
 

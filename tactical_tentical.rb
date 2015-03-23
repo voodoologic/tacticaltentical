@@ -70,7 +70,6 @@ get '/statuses' do
     ws.onmessage do |msg|
       message = JSON.parse(msg)
       Tentacle.new(url: message["extend"], websocket: ws) if message["extend"]
-      FileUtils.rm 'results.json', force: true
       puts "!"*88
       puts'finished'
       ws.send("reload the page")
