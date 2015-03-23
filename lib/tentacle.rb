@@ -6,7 +6,6 @@ require_relative '../models/comment'
 require_relative '../models/result'
 require_relative 'parsers'
 require 'rubygems'
-# require 'watir'
 require 'open-uri'
 require 'nokogiri'
 require 'mechanize'
@@ -163,11 +162,6 @@ class Tentacle
     else
       Parser
     end
-  end
-
-  def link_to_query
-    removed_protocal = @site.url.gsub(/https?:\/\//, "")
-    "link: #{removed_protocal}"
   end
 
   def prep_url(url)

@@ -7,19 +7,15 @@ require 'pry'
 require 'neo4j'
 require 'sinatra-websocket'
 require 'watir-webdriver'
-require 'sinatra/reloader' if development?
+require 'sinatra/reloader' if Sinatra::Base.environment == :development
 require 'moped'
 require 'mongoid'
 require 'json/ext'
-Mongoid.load!(Pathname.getwd + "mongoid.yml", :production)
 require_relative 'lib/tentacle'
 require_relative 'lib/search_tool'
+
 before do
-  mongo_uri  = ENV['MONGOLAB_URI'] || 'localhost'
-  mongo_port = '27017'
-  connection = [mongo_uri, mongo_port].join(':')
-  @session = Moped::Session.new([connection])
-  @session.use :test
+  Mongoid.load!(Pathname.getwd + "mongoid.yml", Sinatra::Base.environment)
 end
 
 Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'] || "http://localhost:7474")
@@ -27,10 +23,9 @@ Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'] || "http://localhost:7474"
 set :server, 'thin'
 set :sockets, []
 
-# timeout 60
-
 enable :logging
 get '/' do
+  @sites = Site.all
   haml :home
 end
 
@@ -44,16 +39,25 @@ get '/application.css' do
   sass :application, :views => "#{settings.root}/assets/stylesheets"
 end
 
+get '/site/:id' do
+  @site = Site.find_by(id: params[:id])
+  haml :site
+end
+
 get '/json' do
-  # [Site,Comment, Participant].each{|k| k.all.each(&:destroy)}
   root_site = "http://www.salon.com/2015/03/12/the_george_w_bush_email_scandal_the_media_has_conveniently_forgotten_partner"
-  site_cache = Result.where(url: root_site)
-  site_cache = Result.first unless site_cache.exist?
-  if site_cache.json_cache_value
-    return site_cache.json_cache_value
+  site = Site.first_or_create(root_site)
+
+  result = Result.first_or_create(url: Site.chop_off_trailing_slash(root_site))
+  if result.json_cache_value
+    return result.json_cache_value
   else
-    results = process_results
-    Tentacle.to_graph_json(results)
+    results = process_results(site)
+    bundled_up_data = Tentacle.to_graph_json(results)
+    result.json_cache_value = bundled_up_data
+    result.url_id = site.id
+    result.save
+    bundled_up_data
   end
 end
 
@@ -98,11 +102,11 @@ end
 
 private
 
-def process_results
+def process_results(site)
   results = []
   results << Site.all.map{|x| x } #you have to do this so it doesn't return a search proxy
   results << Participant.all.map{|x| x}
-  site_relations        = site_cache.map(&:rels).flatten.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT || r.rel_type == :comment}
+  site_relations   = site.rels.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT || r.rel_type == :comment}
   participant_relations = Participant.all.map(&:rels).flatten.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT}
   results << site_relations
   results << participant_relations

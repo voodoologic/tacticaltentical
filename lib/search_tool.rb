@@ -45,4 +45,9 @@ class SearchTool
       URI.decode(url) if url
     end
   end
+
+  def link_to_query
+    removed_protocal = @site.url.gsub(/https?:\/\//, "")
+    "link: #{removed_protocal}"
+  end
 end
