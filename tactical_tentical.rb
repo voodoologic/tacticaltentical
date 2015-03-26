@@ -18,7 +18,6 @@ before do
   Mongoid.load!(Pathname.getwd + "mongoid.yml", Sinatra::Base.environment)
 end
 
-Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'] || "http://localhost:7474")
 
 set :server, 'thin'
 set :sockets, []

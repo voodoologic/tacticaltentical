@@ -9,7 +9,9 @@ require 'rubygems'
 require 'open-uri'
 require 'nokogiri'
 require 'mechanize'
-Neo4j::Session.open(:server_db, ENV['GRAPHENEDB_URL'])
+
+Neo4j::Session.open(:server_db, (ENV['GRAPHENEDB_URL'] || "http://localhost:7474"),  {basic_auth: {username: ENV['NEO4J_USERNAME'], password: ENV['NEO4J_PASSWORD']}})
+
 class Tentacle
   def initialize(url: "https://news.ycombinator.com/item?id=8792778", websocket: nil, depth:  2)
     @websocket = websocket
