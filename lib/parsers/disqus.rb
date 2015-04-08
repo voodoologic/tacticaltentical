@@ -53,7 +53,8 @@ class Disqus < Parser
     super
   rescue Watir::Wait::TimeoutError
     puts "timeout error"
-  rescue StandardError
+  rescue StandardError => e
+    binding.pry
     puts e
   end
 
@@ -72,7 +73,7 @@ class Disqus < Parser
       site = Site.first_or_create(link[:href])
       puts "found links in comments: #{link[:href]}"
       @sites << site if site.present?
-      yield link if block.given?
+      yield link if block_given?
     end
     comment_links
   end

@@ -38,7 +38,7 @@ class Parser
   def save_pair(name, text, links = [])
     return if name.empty? || text.empty?
     participant = Participant.first_or_create(name)
-    @site.participants << participant unless @site.participants.include? participant
+    @site.create_rel(:participants , participant) unless @site.participants.include? participant
     comment = Comment.find_by(text: text) || Comment.create(text: text)
     links.each do |link|
       site = Site.first_or_create(link[:href])

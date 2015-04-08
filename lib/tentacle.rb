@@ -23,16 +23,16 @@ class Tentacle
 
   def perform
     url = @site.url
-    seed_klass = choose_parser_class(url)
-    @parser = seed_klass.new(url: url, websocket: @websocket)
+    seed_klass = SearchTool.choose_parser_class(url)
+    @parser = seed_klass.new(url: url, stem_site: @site, websocket: @websocket)
     @parser.perform
     mechanize_for_links_to
     @parser.sites.each do |site|
       begin
-        klass = choose_parser_class(site.url)
+        klass = SearchTool.choose_parser_class(site.url)
         @websocket.send( "parser class #{klass.to_s} to parse #{site.url}" ) if @websocket
         puts "parser class #{klass.to_s} to parse #{site.url}"
-        klass.new(site.url, @site).perform
+        klass.new(url: site.url, stem_site: @site, websocket: @websocket).perform
       rescue => e
         puts e
         next

@@ -2,6 +2,7 @@ require_relative 'parser'
 class Ycombinator < Parser
 
   def perform
+    @page ||= Nokogiri::HTML(@site.url)
     groups = @page.search('.default')
     groups.each do |blob|
       participant = scrape_participant(blob).text

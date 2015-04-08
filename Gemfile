@@ -1,7 +1,7 @@
 ruby '2.2.1'
 source 'https://rubygems.org'
 gem 'sinatra'
-gem 'neo4j'
+gem 'neo4j', '~>3.0'
 gem 'nokogiri'
 gem 'pry'
 gem 'mechanize'

@@ -6,8 +6,7 @@ class Site
   has_many :out, :participants
   has_many :out, :comments, type: :comment
   has_many :out, :contains, model_class: Site
-  has_many :in,  :referred_by, model_class: Site
-  has_many :out, :referred_by, model_class: Site
+  has_many :both,  :referred_by, model_class: Site
   validate :url_is_valid?
   validates_uniqueness_of :url
   validates_presence_of :url

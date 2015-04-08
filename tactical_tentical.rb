@@ -29,7 +29,11 @@ get '/' do
 end
 
 post '/search' do
-  Tentacle.new(url: params.fetch("search"))
+  if params.fetch("search").present?
+    Tentacle.new(url: params.fetch("search"))
+  else
+    Tentacle.new
+  end
   redirect "/"
 end
 
@@ -44,20 +48,21 @@ get '/site/:id' do
 end
 
 get '/json' do
-  root_site = "http://www.salon.com/2015/03/12/the_george_w_bush_email_scandal_the_media_has_conveniently_forgotten_partner"
+  root_site = "https://news.ycombinator.com/item?id=8792778"
   site = Site.first_or_create(root_site)
 
-  result = Result.first_or_create(url: Site.chop_off_trailing_slash(root_site))
-  if result.json_cache_value
-    return result.json_cache_value
-  else
-    results = process_results(site)
-    bundled_up_data = Tentacle.to_graph_json(results)
-    result.json_cache_value = bundled_up_data
-    result.url_id = site.id
-    result.save
-    bundled_up_data
-  end
+  # result = Result.first_or_create(url: Site.chop_off_trailing_slash(root_site))
+  # if result.json_cache_value
+  #   binding.pry
+  #   return result.json_cache_value
+  # else
+  results = process_results(site)
+  bundled_up_data = Tentacle.to_graph_json(results)
+  # result.json_cache_value = bundled_up_data
+  # result.url_id = site.id
+  # result.save
+  bundled_up_data
+  # end
 end
 
 get '/statuses' do
@@ -94,7 +99,6 @@ end
 
 get '/delete' do
   [Site, Comment, Participant].each{|k| k.all.each(&:destroy)}
-  FileUtils.rm 'results.json', force: true
   redirect "/"
 end
 
