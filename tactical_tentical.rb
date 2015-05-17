@@ -56,7 +56,7 @@ get '/json' do
   #   binding.pry
   #   return result.json_cache_value
   # else
-  results = process_results(site)
+  results = process_results
   bundled_up_data = Tentacle.to_graph_json(results)
   # result.json_cache_value = bundled_up_data
   # result.url_id = site.id
@@ -104,11 +104,11 @@ end
 
 private
 
-def process_results(site)
+def process_results
   results = []
   results << Site.all.map{|x| x } #you have to do this so it doesn't return a search proxy
   results << Participant.all.map{|x| x}
-  site_relations   = site.rels.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT || r.rel_type == :comment}
+  site_relations   = Site.all.map{|x|x.rels.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT || r.rel_type == :comment}}.flatten
   participant_relations = Participant.all.map(&:rels).flatten.reject!{|r| r.rel_type == :COMMENTS || r.rel_type == :COMMENT}
   results << site_relations
   results << participant_relations

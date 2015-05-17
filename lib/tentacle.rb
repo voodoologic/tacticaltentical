@@ -13,7 +13,7 @@ require 'mechanize'
 Neo4j::Session.open(:server_db, (ENV['GRAPHENEDB_URL'] || "http://localhost:7474"),  {basic_auth: {username: ENV['NEO4J_USERNAME'], password: ENV['NEO4J_PASSWORD']}})
 
 class Tentacle
-  def initialize(url: "https://news.ycombinator.com/item?id=8792778", websocket: nil, depth:  2)
+  def initialize(url: "https://news.ycombinator.com/item?id=8792778", websocket: NullWebsocket.new, depth:  2)
     @websocket = websocket
     @depth ||= depth
     @seed_url = prep_url(url)
@@ -30,7 +30,7 @@ class Tentacle
     @parser.sites.each do |site|
       begin
         klass = SearchTool.choose_parser_class(site.url)
-        @websocket.send( "parser class #{klass.to_s} to parse #{site.url}" ) if @websocket
+        @websocket.send( "parser class #{klass.to_s} to parse #{site.url}" )
         puts "parser class #{klass.to_s} to parse #{site.url}"
         klass.new(url: site.url, stem_site: @site, websocket: @websocket).perform
       rescue => e
@@ -84,7 +84,7 @@ class Tentacle
         nil
       end
     end
-    @websocket.send( "done" ) if @websocket
+    @websocket.send( "done" )
     puts "done"
 
     {
