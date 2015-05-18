@@ -8,32 +8,44 @@ class Fyre < Parser
     # chrome = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
     # capabilities = Selenium::WebDriver::Remote::Capabilities.phantomjs("phantomjs.page.settings.userAgent" => bot2)
     # driver = Selenium::WebDriver.for :phantomjs, :desired_capabilities => capabilities
-    @wait = Watir::Browser.new :phantomjs
-    @wait.window.resize_to(1280, 600) #no mobile ads
-    @wait.goto @site.url #visit site
-    if @wait.h3(:id, 'comments').present?
-      comment = @wait.h3(:id, 'comments')
-    else
-      comment = @wait.div(:id, 'comments')
-    end
-    @wait.scroll.to comment #initiate comments in salon.com
-    @wait.screenshot.save("/Users/voodoologic/awesome.png") #test a screenshot
+    Watir.default_timeout = 260
+    @watir = Watir::Browser.new :phantomjs
+    @watir.window.resize_to(1280, 600) #no mobile ads
     begin
-      @wait.div(:class, 'fyre-comment-stream').wait_until_present(10) #wait 10 seconds for comments
-    rescue => e
-      puts e
+      @watir.goto @site.url #visit site
+    rescue
+      @watir.screenshot.save "fyre"
     end
 
-    Watir::Wait.while { @wait.div(:class, 'fyre-stream-more-container').visible? && @wait.div(:class, 'fyre-stream-more-container').click} #click every 'more comments'
+    if @watir.h3(:id, 'comments').present?
+      comment = @watir.h3(:id, 'comments')
+    else
+      comment = @watir.div(:id, 'comments')
+    end
 
-    @fyre_page = Nokogiri::HTML(@wait.html)
-    @fyre_page.search('.fyre-comment-wrapper').each do |blob|
+    if comment
+      @watir.scroll.to comment #initiate comments in salon.com
+    else
+      puts "no comments, skipping"
+    end
+    begin
+      @watir.div(:class, 'fyre-comment-stream').wait_until_present(30) #wait 10 seconds for comments
+    rescue => e
+      @watir.screenshot.save("awesome.png") #test a screenshot
+      puts e
+      puts "no comment stream class."
+    end
+
+    Watir::Wait.while { @watir.div(:class, 'fyre-stream-more-container').visible? && @watir.div(:class, 'fyre-stream-more-container').click} #click every 'more comments'
+
+    @fyre_page = Nokogiri::HTML(@watir.html)
+    @fyre_page.search('.fyre-comment-wrapper, .comment.byuser').each do |blob|
       user    = fetch_user(blob)
       comment = fetch_comment(blob)
       links   = fetch_links(blob)
       save_pair(user, comment, links)
     end
-    @wait.close
+    @watir.close
     super
   rescue Watir::Wait::TimeoutError => e
     puts "timeout error"

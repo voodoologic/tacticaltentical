@@ -3,21 +3,22 @@ class Disqus < Parser
 
   def perform
     return if @site.previously_scraped == true
-    @wait = Watir::Browser.new :phantomjs
-    @wait.goto @site.url
-    @wait.wait(5)
-    @wait.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-    @wait.wait(3)
+    Watir.default_timeout = 280
+    @watir = Watir::Browser.new :phantomjs
+    @watir.goto @site.url
+    @watir.wait(5)
+    @watir.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    @watir.wait(3)
     timeout = 5
     attempt = 0
-    while !@wait.link(data_ui: 'commentsOpen').present? do
+    while !@watir.link(data_ui: 'commentsOpen').present? do
       sleep 1
       puts 'waiting for discus link to show up in wired.'
       attempt += 1
       break if attempt >= timeout
     end
 
-    @page = Nokogiri::HTML(@wait.html)
+    @page = Nokogiri::HTML(@watir.html)
     disqus_url = @page.search("iframe#dsq-2")
     if disqus_url.first.nil?
       puts "couldn't find iframe"
@@ -25,31 +26,31 @@ class Disqus < Parser
     end
     url = disqus_url.first[:src]
 
-    @wait.goto(url)
+    @watir.goto(url)
 
-    while @wait.link(data_action:'reveal').present?
-      @wait.link(data_action:'reveal').click
+    while @watir.link(data_action:'reveal').present?
+      @watir.link(data_action:'reveal').click
     end
 
     page ||= 0
-    while @wait.link(data_action: 'more-posts').present? do
-      @wait.link(data_action: 'more-posts').click
+    while @watir.link(data_action: 'more-posts').present? do
+      @watir.link(data_action: 'more-posts').click
       puts "fetching page #{page}"
       page += 1
       @websocket.send("accessing more comments") if @websocket
-      @wait.wait(3)
-      while @wait.link(data_action:'reveal').present?
-        @wait.link(data_action:'reveal').click
+      # @watir.wait(3)
+      while @watir.link(data_action:'reveal').present?
+        @watir.link(data_action:'reveal').click
       end
     end
-    @disqus_page = Nokogiri::HTML(@wait.html)
+    @disqus_page = Nokogiri::HTML(@watir.html)
     @disqus_page.search(".post-content").each do |blob|
       user    = fetch_user(blob)
       comment = fetch_comment(blob)
       links   = fetch_links(blob)
       save_pair(user, comment, links)
     end
-    @wait.close
+    @watir.close
     super
   rescue Watir::Wait::TimeoutError
     puts "timeout error"

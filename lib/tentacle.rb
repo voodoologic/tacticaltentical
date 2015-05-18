@@ -4,6 +4,7 @@ require_relative '../models/site'
 require_relative '../models/participant'
 require_relative '../models/comment'
 require_relative '../models/result'
+require_relative '../lib/null_websocket'
 require_relative 'parsers'
 require 'rubygems'
 require 'open-uri'
@@ -84,8 +85,6 @@ class Tentacle
         nil
       end
     end
-    @websocket.send( "done" )
-    puts "done"
 
     {
       nodes: nodes.values,
