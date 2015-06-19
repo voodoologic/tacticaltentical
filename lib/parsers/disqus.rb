@@ -55,7 +55,6 @@ class Disqus < Parser
   rescue Watir::Wait::TimeoutError
     puts "timeout error"
   rescue StandardError => e
-    binding.pry
     puts e
   end
 
