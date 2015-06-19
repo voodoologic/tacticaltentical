@@ -30,7 +30,7 @@ class SearchTool
         begin
           klass.new(url: uri.to_s, stem_site: @site, websocket: @websocket ).perform
         rescue => e
-          binding.pry
+          # binding.pry
           puts "@@@@@@@@@ #{__FILE__}:#{__LINE__}"
           puts "\n********** error = #{ e.inspect }"
         end
